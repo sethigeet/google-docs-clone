@@ -1,7 +1,10 @@
+import { TextEditor } from "./components"
+import "./styles.css"
+
 function App() {
   return (
     <div>
-      <h1>Google Docs Clone</h1>
+      <TextEditor />
     </div>
   );
 }
