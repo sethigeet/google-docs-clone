@@ -4,6 +4,27 @@ import Quill from "quill";
 
 interface TextEditorProps {}
 
+const TOOLBAR_OPTIONS = [
+  [{ header: [1, 2, 3, 4, 5, 6, false] }],
+  [],
+  [{ font: [] }],
+  [],
+  [{ list: "ordered" }, { list: "bullet" }],
+  [],
+  ["bold", "italic", "underline", "strike"],
+  [],
+  [{ color: [] }, { background: [] }],
+  [],
+  [{ script: "sub" }, { script: "super" }],
+  [],
+  [{ align: [] }],
+  [],
+  ["image", "video", "blockquote", "link", "formula", "code-block"],
+  [],
+  [],
+  ["clean"],
+];
+
 export const TextEditor: FC<TextEditorProps> = () => {
   const editorRef = useRef<HTMLDivElement>(null);
 
@@ -12,6 +33,9 @@ export const TextEditor: FC<TextEditorProps> = () => {
     editorRef.current?.append(editor);
     new Quill(editor, {
       theme: "snow",
+      modules: {
+        toolbar: TOOLBAR_OPTIONS,
+      },
     });
 
     const currentEditor = editorRef.current;
@@ -23,9 +47,5 @@ export const TextEditor: FC<TextEditorProps> = () => {
     };
   }, []);
 
-  return (
-    <div id="editor" ref={editorRef}>
-      <h1>TextEditor</h1>
-    </div>
-  );
+  return <div className="editor" ref={editorRef}></div>;
 };
