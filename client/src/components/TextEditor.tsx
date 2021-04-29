@@ -1,6 +1,9 @@
-import { FC, useEffect, useRef } from "react";
+import { FC, useEffect, useRef, useState } from "react";
+
 import "quill/dist/quill.snow.css";
 import Quill from "quill";
+
+import { io } from "socket.io-client";
 
 interface TextEditorProps {}
 
@@ -26,17 +29,21 @@ const TOOLBAR_OPTIONS = [
 ];
 
 export const TextEditor: FC<TextEditorProps> = () => {
+  const [socket, setSocket] = useState<ReturnType<typeof io>>(null);
+  const [quill, setQuill] = useState<Quill>(null);
   const editorRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const editor = document.createElement("div");
     editorRef.current?.append(editor);
-    new Quill(editor, {
+    const quillEditor = new Quill(editor, {
       theme: "snow",
       modules: {
         toolbar: TOOLBAR_OPTIONS,
       },
     });
+
+    setQuill(quillEditor);
 
     const currentEditor = editorRef.current;
 
@@ -44,6 +51,15 @@ export const TextEditor: FC<TextEditorProps> = () => {
       if (currentEditor) {
         currentEditor.innerHTML = "";
       }
+    };
+  }, []);
+
+  useEffect(() => {
+    const connection = io("http://localhost:3001");
+    setSocket(connection);
+
+    return () => {
+      connection.disconnect();
     };
   }, []);
 
