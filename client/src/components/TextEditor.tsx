@@ -113,7 +113,9 @@ export const TextEditor: FC<TextEditorProps> = () => {
   }, [socket, quill]);
 
   useEffect(() => {
-    const connection = io("http://localhost:3001");
+    const connection = io("http://localhost:3001", {
+      path: "/socket",
+    });
     setSocket(connection);
 
     return () => {

@@ -15,6 +15,7 @@ connect("mongodb://localhost/google-docs-clone", {
 
 const httpServer = createServer();
 const io = new Server(httpServer, {
+  path: "/socket",
   cors: {
     origin: "http://localhost:3000",
     methods: ["GET", "POST"],
@@ -39,4 +40,4 @@ io.on("connection", (socket) => {
   });
 });
 
-httpServer.listen(3001);
+httpServer.listen(3001, () => console.log("Started server on port 3001"));
