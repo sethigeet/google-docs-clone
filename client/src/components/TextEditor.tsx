@@ -1,4 +1,5 @@
 import { FC, useEffect, useRef, useState } from "react";
+import { useParams } from "react-router-dom";
 
 import "quill/dist/quill.snow.css";
 import Quill, { TextChangeHandler } from "quill";
@@ -33,6 +34,8 @@ export const TextEditor: FC<TextEditorProps> = () => {
   const [quill, setQuill] = useState<Quill | null>(null);
   const editorRef = useRef<HTMLDivElement | null>(null);
 
+  const { id: documentId } = useParams<{ id: string }>();
+
   useEffect(() => {
     const editor = document.createElement("div");
     editorRef.current?.append(editor);
@@ -42,6 +45,8 @@ export const TextEditor: FC<TextEditorProps> = () => {
         toolbar: TOOLBAR_OPTIONS,
       },
     });
+    quillEditor.disable();
+    quillEditor.setText("Loading...");
 
     setQuill(quillEditor);
 
@@ -68,6 +73,17 @@ export const TextEditor: FC<TextEditorProps> = () => {
       quill.off("text-change", handler);
     };
   }, [socket, quill]);
+
+  useEffect(() => {
+    if (socket === null || quill === null) return;
+
+    socket.once("load-document", (data) => {
+      quill.setContents(data);
+      quill.enable();
+    });
+
+    socket.emit("get-document", documentId);
+  }, [socket, quill, documentId]);
 
   useEffect(() => {
     if (socket === null || quill === null) return;
