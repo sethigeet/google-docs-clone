@@ -1,7 +1,7 @@
 import { FC, useEffect, useRef, useState } from "react";
 
 import "quill/dist/quill.snow.css";
-import Quill from "quill";
+import Quill, { TextChangeHandler } from "quill";
 
 import { io } from "socket.io-client";
 
@@ -29,9 +29,9 @@ const TOOLBAR_OPTIONS = [
 ];
 
 export const TextEditor: FC<TextEditorProps> = () => {
-  const [socket, setSocket] = useState<ReturnType<typeof io>>(null);
-  const [quill, setQuill] = useState<Quill>(null);
-  const editorRef = useRef<HTMLDivElement>(null);
+  const [socket, setSocket] = useState<ReturnType<typeof io> | null>(null);
+  const [quill, setQuill] = useState<Quill | null>(null);
+  const editorRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
     const editor = document.createElement("div");
@@ -53,6 +53,34 @@ export const TextEditor: FC<TextEditorProps> = () => {
       }
     };
   }, []);
+
+  useEffect(() => {
+    if (socket === null || quill === null) return;
+
+    const handler: TextChangeHandler = (delta, oldDelta, source) => {
+      if (source !== "user") return;
+
+      socket.emit("send-changes", delta);
+    };
+    quill.on("text-change", handler);
+
+    return () => {
+      quill.off("text-change", handler);
+    };
+  }, [socket, quill]);
+
+  useEffect(() => {
+    if (socket === null || quill === null) return;
+
+    const handler = (data: Parameters<Quill["updateContents"]>[0]) => {
+      quill.updateContents(data);
+    };
+    socket.on("receive-changes", handler);
+
+    return () => {
+      socket.off("receive-changes", handler);
+    };
+  }, [socket, quill]);
 
   useEffect(() => {
     const connection = io("http://localhost:3001");
