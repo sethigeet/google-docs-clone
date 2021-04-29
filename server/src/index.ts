@@ -3,6 +3,9 @@ import { Server } from "socket.io";
 
 import { connect } from "mongoose";
 
+import { Document } from "./models";
+import { findOrCreateDocument } from "./utils";
+
 connect("mongodb://localhost/google-docs-clone", {
   useNewUrlParser: true,
   useUnifiedTopology: true,
@@ -21,13 +24,17 @@ const io = new Server(httpServer, {
 io.on("connection", (socket) => {
   console.log("connected!");
 
-  socket.on("get-document", (id) => {
-    const content = "";
-    socket.join(id);
-    socket.emit("load-document", content);
+  socket.on("get-document", async (documentId) => {
+    const document = await findOrCreateDocument(documentId);
+    socket.join(documentId);
+    socket.emit("load-document", (document as any).data);
 
     socket.on("send-changes", (data) => {
-      socket.broadcast.to(id).emit("receive-changes", data);
+      socket.broadcast.to(documentId).emit("receive-changes", data);
+    });
+
+    socket.on("save-document", async (data) => {
+      await Document.findByIdAndUpdate(documentId, { data });
     });
   });
 });
